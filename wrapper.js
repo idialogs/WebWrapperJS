@@ -162,8 +162,7 @@ function wrapper(strHandoff) {
         var ajax = $.ajax;
 
         $.ajax = function () {
-            IdaMobileAppBrowsing.postToNativeApp("Ajax url: " +
-                                                 arguments[0].url)
+            IdaMobileAppBrowsing.postToNativeApp("Ajax url: " + arguments[0].url);
             return ajax.apply($, arguments);
         }
     }
