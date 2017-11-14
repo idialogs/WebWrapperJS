@@ -25,7 +25,8 @@ function wrapper(strHandoff) {
     });
 
     /**
-     * WebWrapper module contains all
+     * WebWrapper module contains all webview wrapper functionality
+     *
      * @param opts {{
         appName: string
         css_class: string
@@ -35,7 +36,7 @@ function wrapper(strHandoff) {
         version: string
         server: string
        }}
-     * @returns {{postToNativeApp: function}}
+     * @returns WebWrapper
      * @constructor
      */
     function WebWrapper(opts) {
@@ -78,13 +79,23 @@ function wrapper(strHandoff) {
 
             /**
              * Method to post string message to native app
-             * @param str
+             *
+             * Native apps should implement a common interface
+             * for reacting to messages of particular type
+             *
+             * @param message {String}
+             * @param payload {{}}
              */
-            postToNativeApp: function (str) {
+            postToNativeApp: function (type, data) {
+                var payload = {
+                    type: type,
+                    data: data
+                };
+
                 if (this.isIOS) {
-                    window.webkit.messageHandlers[opts.appName].postMessage(str);
+                    window.webkit.messageHandlers[opts.appName].postMessage(payload);
                 } else if (this.isAndroid) {
-                    //TODO Warrington - post str to android app
+                    //TODO Warrington - post payload object to android code
                 }
             },
 
@@ -125,7 +136,7 @@ function wrapper(strHandoff) {
                 }
 
                 // Inform native app of document ready and whether we are logged in
-                this.postToNativeApp({docReady: true});
+                this.postToNativeApp('docready');
 
                 //Now that publish is available, notify web JS that app browsing is active
                 $.publish('idaMobileApp/load', opts.appName);
@@ -138,10 +149,13 @@ function wrapper(strHandoff) {
                         e.preventDefault();
 
                         self.postToNativeApp(
-                            {
-                                nativeNavigation: "back",
-                                showAlert: "Check your email..."
-                            }
+                            'alert',
+                            {message: "Check your email"}
+                        )
+
+                        self.postToNativeApp(
+                            "navigate",
+                            {navigate: "back"}
                         );
                     }
                 );
@@ -162,7 +176,10 @@ function wrapper(strHandoff) {
         var ajax = $.ajax;
 
         $.ajax = function () {
-            IdaMobileAppBrowsing.postToNativeApp("Ajax url: " + arguments[0].url);
+            IdaMobileAppBrowsing.postToNativeApp(
+                "log",
+                {message: "Ajax url: " + arguments[0].url}
+            );
             return ajax.apply($, arguments);
         }
     }
