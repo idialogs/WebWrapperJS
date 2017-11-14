@@ -9,16 +9,7 @@
  * To execute wrapper methods, inject js strings like this.
  *    "IdaMobileAppBrowsing.methodName('string')"
  *
- * @param strHandoff Should contain the following values
- *  {
- *      appName: Name of the app, up to developer to name it
- *      css_class: String class name to add to html tag for this app - can be used for CSS
- *      oauthToken: User's oauth token
- *      debugAjax: Bool value whether to post every ajax URL to the native app, recommend FALSE in production builds
- *      isWrapperApp: Bool whether app is running as true webview wrapper or native app with few webviews
- *      version: String of what version/build app is running
- *      server: String server name app is connected to
- *  }
+ * @param strHandoff
  */
 function wrapper(strHandoff) {
 
@@ -35,7 +26,15 @@ function wrapper(strHandoff) {
 
     /**
      * WebWrapper module contains all
-     * @param opts
+     * @param opts {{
+        appName: string
+        css_class: string
+        oauthToken: string
+        debugAjax: bool
+        isWrapperApp: bool
+        version: string
+        server: string
+       }}
      * @returns {{postToNativeApp: function}}
      * @constructor
      */
