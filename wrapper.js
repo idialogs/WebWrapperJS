@@ -9,7 +9,7 @@
  * To execute wrapper methods, inject js strings like this.
  *    "IdaMobileAppBrowsing.methodName('string')"
  *
- * @param strHandoff
+ * @param strHandoff - JSON encoded handoff dictionary
  */
 function wrapper(strHandoff) {
 
