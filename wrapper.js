@@ -30,18 +30,24 @@ function wrapper(strHandoff) {
      * but if not, send everything that was logged
      */
     var _consoleLog = console.log;
-    console.log = function() {
+    console.log = function () {
         var args = Array.prototype.slice.call(arguments, 0),
-            message = args;
+            message;
 
-        if (args.length === 1 && typeof arguments[0]  === "string") {
-            message =  "Console log - " + arguments[0];
+        if (args.length === 1 && typeof arguments[0] === "string") {
+            message = "Console log - " + arguments[0];
+        } else {
+            try {
+                message = JSON.stringify(args);
+            } catch (e) {
+                message = "Couldn't parse logged object."
+            }
         }
 
         window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
 
         return _consoleLog.apply(console, arguments);
-    }
+    };
 
     /**
      * WebWrapper module contains all webview wrapper functionality
@@ -118,7 +124,16 @@ function wrapper(strHandoff) {
                 };
 
                 if (this.isIOS) {
-                    window.webkit.messageHandlers[opts.appName].postMessage(payload);
+                    try {
+                        window.webkit.messageHandlers[opts.appName].postMessage(payload);
+                    } catch (e) {
+                        window.webkit.messageHandlers[opts.appName].postMessage(
+                            {
+                                type: "error",
+                                data: "Failed to post message."
+                            }
+                        );
+                    }
                 } else if (this.isAndroid) {
                     window.callToAndroidFunction.postMessage(type, data);
                 }
@@ -151,12 +166,14 @@ function wrapper(strHandoff) {
             },
 
             /**
-            * Adds the wrapper app version and server info to the hamburger menu
-            */
-            addVersionInfo: function(){
+             * Adds the wrapper app version and server info to the hamburger menu
+             */
+            addVersionInfo: function () {
                 var para = document.createElement("li");
-                para.className+="mobile-wrapper-info";
-                var node = document.createTextNode("App ver: "+ opts.version + ", Environment: "+ opts.server);
+                para.className += "mobile-wrapper-info";
+                var node = document.createTextNode("App ver: " + opts.version +
+                                                   ", Environment: " +
+                                                   opts.server);
                 para.appendChild(node);
                 var element = document.getElementById("mp-footer-links");
                 element.appendChild(para);
@@ -175,36 +192,51 @@ function wrapper(strHandoff) {
                 // Inform native app of document ready and whether we are logged in
                 this.postToNativeApp('docready');
 
+                //Add version info to page
+                if (opts.server && opts.version) {
+                    this.addVersionInfo();
+                }
+
                 //Now that publish is available, notify web JS that app browsing is active
                 $.publish('idaMobileApp/load', opts.appName);
 
-                //Forgot password screen: notify user in native app to check their email after resetting PW
-                $(document.body).on(
-                    'click',
-                    '#backSent',
-                    function (e) {
-                        e.preventDefault();
+                $.attachHandlers(
+                    {
+                        /**
+                         * Forgot password screen
+                         * notify user in native app to check their email after resetting PW
+                         */
+                        forgotPasswordBackButton: {
+                            events: "click",
+                            select: "#backSent",
+                            method: function (e) {
+                                e.preventDefault();
 
-                        self.postToNativeApp(
-                            'alert',
-                            {message: "Check your email"}
-                        )
+                                //Show native alert
+                                self.postToNativeApp(
+                                    'alert',
+                                    {message: "Check your email"}
+                                );
 
-                        self.postToNativeApp(
-                            "navigate",
-                            {navigate: "back"}
-                        );
+                                //Navigate back to login screen
+                                self.postToNativeApp(
+                                    "navigate",
+                                    {navigate: "back"}
+                                );
+                            }
+                        },
+                        /**
+                         * Listener for native logout functionality
+                         */
+                        logoutNativeApp: {
+                            events: ["click", "touchstart"],
+                            select: "[href*='/logout']",
+                            method: function (e) {
+                                self.postToNativeApp('logout');
+                            }
+                        }
                     }
                 );
-
-                //Listener for native logout functionality
-                $('[href="https://'+opts.server+'.idialogs.com/logout"]').on(
-                    'click',
-                     function (e){
-                         self.postToNativeApp('logout', '{}');
-                     }
-                );
-
             }
         }
     }
