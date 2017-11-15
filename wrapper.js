@@ -25,6 +25,25 @@ function wrapper(strHandoff) {
     });
 
     /**
+     * Send console output to native app
+     * Most of the time console log is just 1 string
+     * but if not, send everything that was logged
+     */
+    var _consoleLog = console.log;
+    console.log = function() {
+        var args = Array.prototype.slice.call(arguments, 0),
+            message = args;
+
+        if (args.length === 1 && typeof arguments[0]  === "string") {
+            message =  "Console log - " + arguments[0];
+        }
+
+        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
+
+        return _consoleLog.apply(console, arguments);
+    }
+
+    /**
      * WebWrapper module contains all webview wrapper functionality
      *
      * @param opts {{
@@ -82,6 +101,13 @@ function wrapper(strHandoff) {
              *
              * Native apps should implement a common interface
              * for reacting to messages of particular type
+             *
+             * Message types so far (feel free to add, just notify other devs)
+             *
+             *  alert - pop up a native alert containing message text
+             *  navigate - trigger native app navigation, e.g. "back"
+             *  docready - notifies app when "documentReady" JS event has fired
+             *  log - output message to native console, message could be any type of object
              *
              * @param message {String}
              * @param payload {{}}
