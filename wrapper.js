@@ -92,7 +92,6 @@ function wrapper(strHandoff) {
 
             /**
              * Bool test if this is android webwrapper
-             * TODO warrington -- add test for android
              */
             isAndroid: opts.isAndroid,
 
@@ -184,6 +183,14 @@ function wrapper(strHandoff) {
                             {navigate: "back"}
                         );
                     }
+                );
+
+                //Listener for native logout functionality
+                $('[href="https://'+opts.server+'.idialogs.com/logout"]').on(
+                'click',
+                 function (e){
+                     self.postToNativeApp('logout', '{}');
+                 }
                 );
             }
         }
