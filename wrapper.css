@@ -1,0 +1,47 @@
+@charset "utf-8";
+
+
+
+/******* General Css ***********/
+li.mobile-wrapper-info {
+    margin-left: 10%;
+    color: rgba(255,255,255,0.6);
+    font-weight: bold;
+}
+
+
+
+
+/*************** Android Specific Css ********************/
+.idaMobileAndroid .keypadInputContainer .modal-body {
+    max-height: 90%;
+}
+
+
+.idaMobileAndroid .moduleRoot.expanded-module .report-pane-modal.module-pane{
+    overflow-y:auto;
+    height: 100% !important;
+}
+
+
+.report-modal-pane-dismiss-bottom {
+    bottom: 20px;
+    top: auto;
+    left: 20px;
+    position: relative;
+    width: calc(100% - 70px);
+}
+
+/*Messages Screen*/
+.idaMobileAndroid .m-ida-message  {
+     height: 70% !important;
+     max-height: 70% !important;
+}
+
+.idaMobileAndroid .m-ida-message .compose-message-container {
+    height: 76% !important;
+    max-height: none !important;
+}
+
+
+

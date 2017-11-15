@@ -151,6 +151,18 @@ function wrapper(strHandoff) {
             },
 
             /**
+            * Adds the wrapper app version and server info to the hamburger menu
+            */
+            addVersionInfo: function(){
+                var para = document.createElement("li");
+                para.className+="mobile-wrapper-info";
+                var node = document.createTextNode("App ver: "+ opts.version + ", Environment: "+ opts.server);
+                para.appendChild(node);
+                var element = document.getElementById("mp-footer-links");
+                element.appendChild(para);
+            },
+
+            /**
              * On document ready logic
              */
             launchApp: function () {
@@ -187,11 +199,12 @@ function wrapper(strHandoff) {
 
                 //Listener for native logout functionality
                 $('[href="https://'+opts.server+'.idialogs.com/logout"]').on(
-                'click',
-                 function (e){
-                     self.postToNativeApp('logout', '{}');
-                 }
+                    'click',
+                     function (e){
+                         self.postToNativeApp('logout', '{}');
+                     }
                 );
+
             }
         }
     }
