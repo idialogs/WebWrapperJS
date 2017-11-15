@@ -75,7 +75,7 @@ function wrapper(strHandoff) {
              * Bool test if this is android webwrapper
              * TODO warrington -- add test for android
              */
-            isAndroid: false,
+            isAndroid: opts.isAndroid,
 
             /**
              * Method to post string message to native app
@@ -95,7 +95,7 @@ function wrapper(strHandoff) {
                 if (this.isIOS) {
                     window.webkit.messageHandlers[opts.appName].postMessage(payload);
                 } else if (this.isAndroid) {
-                    //TODO Warrington - post payload object to android code
+                    window.callToAndroidFunction.postMessage(type, data);
                 }
             },
 
