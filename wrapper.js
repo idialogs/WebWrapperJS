@@ -60,6 +60,7 @@ function wrapper(strHandoff) {
         isWrapperApp: bool
         version: string
         server: string
+        style: string
        }}
      * @returns WebWrapper
      * @constructor
@@ -171,8 +172,8 @@ function wrapper(strHandoff) {
             addVersionInfo: function () {
                 var para = document.createElement("li");
                 para.className += "mobile-wrapper-info";
-                var node = document.createTextNode("App ver: " + opts.version +
-                                                   ", Environment: " +
+                var node = document.createTextNode("App v" + opts.version +
+                                                   " Server: " +
                                                    opts.server);
                 para.appendChild(node);
                 var element = document.getElementById("mp-footer-links");
@@ -195,6 +196,12 @@ function wrapper(strHandoff) {
                 //Add version info to page
                 if (opts.server && opts.version) {
                     this.addVersionInfo();
+                }
+
+                if (opts.style) {
+                    var style = document.createElement('style');
+                    style.innerHTML = opts.style;
+                    document.head.appendChild(style)
                 }
 
                 //Now that publish is available, notify web JS that app browsing is active
