@@ -232,7 +232,7 @@ function wrapper(strHandoff) {
                             events: ["click", "touchstart"],
                             select: "[href*='/logout']",
                             method: function (e) {
-                                self.postToNativeApp('logout');
+                                self.postToNativeApp('logout', '{}');
                             }
                         }
                     }
