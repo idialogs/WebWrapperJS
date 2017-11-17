@@ -53,6 +53,10 @@ li.mobile-wrapper-info {
     position: absolute;
     bottom: 0.75em;
 }
+.mp-level-overlay .mp-scroll .ml-version-info ,
+.mp-level-overlay .mp-scroll{
+    position: static;
+}
 @media screen and (max-height: 605px) {
     /* Undo pinning version number to bottom when too short*/
     .mp-scroll {
