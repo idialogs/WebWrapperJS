@@ -43,5 +43,23 @@ li.mobile-wrapper-info {
     max-height: none !important;
 }
 
-
-
+/***********
+ Pin version number to bottom, also done on web, but this is a backup
+ ***********/
+.mp-scroll {
+    position: relative;
+}
+.ml-version-info {
+    position: absolute;
+    bottom: 0.75em;
+}
+@media screen and (max-height: 605px) {
+    /* Undo pinning version number to bottom when too short*/
+    .mp-scroll {
+        position: static;
+    }
+    .ml-version-info {
+        position: static;
+        bottom: inherit;
+    }
+}

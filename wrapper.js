@@ -61,6 +61,11 @@ function wrapper(strHandoff) {
         version: string
         server: string
         style: string
+        app_options: {
+            name: string
+            link: string
+            icon: string
+          }
        }}
      * @returns WebWrapper
      * @constructor
@@ -170,14 +175,31 @@ function wrapper(strHandoff) {
              * Adds the wrapper app version and server info to the hamburger menu
              */
             addVersionInfo: function () {
-                var para = document.createElement("li");
+                var para = document.createElement("p");
+
                 para.className += "mobile-wrapper-info";
-                var node = document.createTextNode("App v" + opts.version +
-                                                   " Server: " +
-                                                   opts.server);
-                para.appendChild(node);
-                var element = document.getElementById("mp-footer-links");
-                element.appendChild(para);
+                para.appendChild(document.createTextNode("App v" + opts.version + " Server: " + opts.server));
+
+                $('.ml-version-info').append($(para));
+            },
+
+            /**
+             * Add an item to the ml push menu (hamburger menu)
+             * @param name
+             * @param link
+             * @param icon
+             */
+            appendPushMenuItem: function (name, link, icon) {
+                var linkHtml = '<li class="ml-link-wrapper">' +
+                               '    <a class="ml-link app-nav-link" href="'+link+'" data-href="'+link+'">' +
+                               '        <i class="icon-'+icon+'"></i>' +
+                               '        ' + name +
+                               '    </a>' +
+                               '</li>'
+
+                $('#mp-menu').find('.mp-scroll > ul .ml-link-wrapper:last-child').after(
+                    $(linkHtml)
+                );
             },
 
             /**
@@ -196,6 +218,10 @@ function wrapper(strHandoff) {
                 //Add version info to page
                 if (opts.server && opts.version) {
                     this.addVersionInfo();
+                }
+
+                if (opts.app_options) {
+                    this.appendPushMenuItem(opts.app_options.name, opts.app_options.link, opts.app_options.icon)
                 }
 
                 if (opts.style) {
@@ -240,6 +266,20 @@ function wrapper(strHandoff) {
                             select: "[href*='/logout']",
                             method: function (e) {
                                 self.postToNativeApp('logout', '{}');
+                            }
+                        },
+                        /**
+                         * General native-app links
+                         */
+                        nativeAppLink: {
+                            events: ["click", "touchstart"],
+                            select: ".app-nav-link",
+                            method: function (e) {
+                                e.preventDefault();
+                                self.postToNativeApp(
+                                    "navigate",
+                                    {navigate: this.getAttribute('data-href')}
+                                );
                             }
                         }
                     }
