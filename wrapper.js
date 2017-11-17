@@ -180,7 +180,7 @@ function wrapper(strHandoff) {
                 para.className += "mobile-wrapper-info";
                 para.appendChild(document.createTextNode("App v" + opts.version + " Server: " + opts.server));
 
-                $('.ml-version-info').append($(para));
+                $('#mp-footer-end').append($(para));
             },
 
             /**
