@@ -25,31 +25,6 @@ function wrapper(strHandoff) {
     });
 
     /**
-     * Send console output to native app
-     * Most of the time console log is just 1 string
-     * but if not, send everything that was logged
-     */
-    var _consoleLog = console.log;
-    console.log = function () {
-        var args = Array.prototype.slice.call(arguments, 0),
-            message;
-
-        if (args.length === 1 && typeof arguments[0] === "string") {
-            message = "Console log - " + arguments[0];
-        } else {
-            try {
-                message = JSON.stringify(args);
-            } catch (e) {
-                message = "Couldn't parse logged object."
-            }
-        }
-
-        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
-
-        return _consoleLog.apply(console, arguments);
-    };
-
-    /**
      * WebWrapper module contains all webview wrapper functionality
      *
      * @param opts {{
@@ -203,11 +178,30 @@ function wrapper(strHandoff) {
             },
 
             /**
+             * If logout screen is visible we hide it and notify the native app
+             */
+            avoidLogoutScreen: function() {
+                var blnLoginPage = !!document.querySelector('.login-page');
+
+                if (blnLoginPage) {
+                    $(document.documentElement).addClass('hide');
+                    this.postToNativeApp(
+                        "logout",
+                        {tokenRefresh: !!self.token}
+                    );
+                }
+            },
+
+            /**
              * On document ready logic
              */
             launchApp: function () {
                 var self = this;
 
+                //Ensures that login screen doesn't get shown if token renewal error
+                self.avoidLogoutScreen();
+
+                //Append optional css class to the document element
                 if (opts.css_class) {
                     $(document.documentElement).addClass(opts.css_class);
                 }
@@ -220,10 +214,12 @@ function wrapper(strHandoff) {
                     this.addVersionInfo();
                 }
 
+                //Append push menu item for app options if specified
                 if (opts.app_options) {
                     this.appendPushMenuItem(opts.app_options.name, opts.app_options.link, opts.app_options.icon)
                 }
 
+                //If CSS string is provided, put it in the DOM
                 if (opts.style) {
                     var style = document.createElement('style');
                     style.innerHTML = opts.style;
@@ -281,6 +277,15 @@ function wrapper(strHandoff) {
                                     {navigate: this.getAttribute('data-href')}
                                 );
                             }
+                        },
+                        /**
+                         * Re-run the logout screen check on any ajax load
+                         */
+                        avoidLogoutScreenOnLoad: {
+                            events: 'ajax/load/complete',
+                            method: function () {
+                                self.avoidLogoutScreen();
+                            }
                         }
                     }
                 );
@@ -308,4 +313,50 @@ function wrapper(strHandoff) {
             return ajax.apply($, arguments);
         }
     }
+
+
+    /**
+     * Send console output to native app
+     * Most of the time console log is just 1 string
+     * but if not, send everything that was logged
+     */
+    var _consoleLog = console.log;
+    console.log = function () {
+        var args = Array.prototype.slice.call(arguments, 0),
+            message;
+
+        if (args.length === 1 && typeof arguments[0] === "string") {
+            message = "Console log - " + arguments[0];
+        } else {
+            try {
+                message = JSON.stringify(args);
+            } catch (e) {
+                message = "Couldn't parse logged object."
+            }
+        }
+
+        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
+
+        return _consoleLog.apply(console, arguments);
+    };
+
+    var _consoleWarn = console.warn;
+    console.warn = function () {
+        var args = Array.prototype.slice.call(arguments, 0),
+            message;
+
+        if (args.length === 1 && typeof arguments[0] === "string") {
+            message = "Console warn - " + arguments[0];
+        } else {
+            try {
+                message = JSON.stringify(args);
+            } catch (e) {
+                message = "Couldn't parse logged object."
+            }
+        }
+
+        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
+
+        return _consoleWarn.apply(console, arguments);
+    };
 }
