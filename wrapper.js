@@ -172,7 +172,7 @@ function wrapper(strHandoff) {
                                '    </a>' +
                                '</li>'
 
-                $('#mp-menu').find('.mp-scroll > ul .ml-link-wrapper:last-child').after(
+                $('#mp-menu').find('.mp-scroll > ul > .ml-link-wrapper:last-child').after(
                     $(linkHtml)
                 );
             },
