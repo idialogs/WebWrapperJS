@@ -236,11 +236,9 @@ function wrapper(strHandoff) {
                          * notify user in native app to check their email after resetting PW
                          */
                         forgotPasswordBackButton: {
-                            events: "click",
-                            select: "#backSent",
+                            events: 'click',
+                            select: '#backSent',
                             method: function (e) {
-                                e.preventDefault();
-
                                 //Show native alert
                                 self.postToNativeApp(
                                     'alert',

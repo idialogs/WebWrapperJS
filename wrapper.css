@@ -9,6 +9,13 @@ li.mobile-wrapper-info {
     font-weight: bold;
 }
 
+#footer-links,
+#footer-small-links{
+    display: none;
+}
+.password #in-nav {
+    display: none;
+}
 
 .login-page,
 .login-form{
