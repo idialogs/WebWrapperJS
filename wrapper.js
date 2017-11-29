@@ -140,6 +140,35 @@ function wrapper(strHandoff) {
             },
 
             /**
+             * Trigger the displayed data and navigation elements on the page to reload
+             *
+             * NOTE this does not reset cached assets, that is handled in IdaNetwork (web JS)
+             */
+            updatePage: function() {
+                //Refresh header navigation
+                if (IdaNetwork.getSubNav) {
+                    IdaNetwork.getSubNav();
+                }
+
+                //Refresh "sub" navigation
+                if (IdaNetwork.getMainNav) {
+                    IdaNetwork.getMainNav();
+                }
+
+                //Refresh content on the page via ajax
+                if (IdaNetwork.updatePageContent) {
+                    IdaNetwork.updatePageContent();
+                } else {
+                    //Fallback, can be deleted later...
+                    if (iDialogs.constructors.Dashboard.dashboardPage()) {
+                        $.publish('module/reload');
+                    } else if (!window.IdaNetwork.confirmNav.blnConfirm) {
+                        iDialogs.methods.updateThisPage();
+                    }
+                }
+            },
+
+            /**
              * Opens the push navigation menu (hamburger menu)
              */
             showNavigation: function () {
@@ -211,7 +240,14 @@ function wrapper(strHandoff) {
 
                 //Add version info to page
                 if (opts.server && opts.version) {
-                    this.addVersionInfo();
+                    self.addVersionInfo();
+
+                    //When navigation menu is refreshed, we need to re-add the version number
+                    $.subscribe('ajax/navRefreshed mlpushmenu/toggle', function(e, opts) {
+                        if (opts.navElement === 'mp-menu' || e.type === 'mlpushmenu/toggle') {
+                            self.addVersionInfo();
+                        }
+                    });
                 }
 
                 //Append push menu item for app options if specified
