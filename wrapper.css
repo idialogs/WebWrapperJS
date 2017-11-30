@@ -28,6 +28,10 @@ li.mobile-wrapper-info {
     max-height: 90%;
 }
 
+.idaMobileAndroid .user-nav-avatar-wrapper {
+    border: none;
+}
+
 
 .idaMobileAndroid .moduleRoot.expanded-module .report-pane-modal.module-pane{
     overflow-y:auto;
