@@ -46,6 +46,7 @@ function wrapper(strHandoff) {
      * @constructor
      */
     function WebWrapper(opts) {
+        var self = this;
 
         //Launch ajax debugging if requested
         if (opts.debugAjax) {
@@ -179,12 +180,13 @@ function wrapper(strHandoff) {
              * Adds the wrapper app version and server info to the hamburger menu
              */
             addVersionInfo: function () {
-                var para = document.createElement("p");
+                if (!self.$versionNode) {
+                    self.$versionNode = $("<p class='mobile-wrapper-info'>" +
+                                          "App v" + opts.version + " Server: " + opts.server +
+                                          "</p>");
+                }
 
-                para.className += "mobile-wrapper-info";
-                para.appendChild(document.createTextNode("App v" + opts.version + " Server: " + opts.server));
-
-                $('#mp-footer-end').append($(para));
+                $('#mp-footer-end').append(self.$versionNode);
             },
 
             /**
@@ -199,7 +201,7 @@ function wrapper(strHandoff) {
                                '        <i class="icon-'+icon+'"></i>' +
                                '        ' + name +
                                '    </a>' +
-                               '</li>'
+                               '</li>';
 
                 $('#mp-menu').find('.mp-scroll > ul > .ml-link-wrapper:last-child').after(
                     $(linkHtml)
@@ -243,7 +245,7 @@ function wrapper(strHandoff) {
                     self.addVersionInfo();
 
                     //When navigation menu is refreshed, we need to re-add the version number
-                    $.subscribe('ajax/navRefreshed mlpushmenu/toggle', function(e, opts) {
+                    $.subscribe('ajax/navRefreshed', function(e, opts) {
                         if (opts.navElement === 'mp-menu' || e.type === 'mlpushmenu/toggle') {
                             self.addVersionInfo();
                         }
