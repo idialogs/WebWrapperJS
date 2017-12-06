@@ -148,14 +148,9 @@ function wrapper(strHandoff) {
              * NOTE this does not reset cached assets, that is handled in IdaNetwork (web JS)
              */
             updatePage: function() {
-                //Refresh header navigation
+                //Refresh sub navigations
                 if (IdaNetwork.getSubNav) {
                     IdaNetwork.getSubNav();
-                }
-
-                //Refresh "sub" navigation
-                if (IdaNetwork.getMainNav) {
-                    IdaNetwork.getMainNav();
                 }
 
                 //Refresh content on the page via ajax
