@@ -21,6 +21,7 @@ function wrapper(strHandoff) {
      * Equivalent to documentReady from jQuery
      */
     document.addEventListener("DOMContentLoaded", function (e) {
+        document.documentElement.classList.add('idaMobileLoggedOut')
         window.IdaMobileAppBrowsing.launchApp();
     });
 
@@ -70,6 +71,7 @@ function wrapper(strHandoff) {
              * @returns {*}
              */
             setToken: function (token) {
+                document.documentElement.classList.remove('idaMobileLoggedOut')
                 return this.token = token
             },
 

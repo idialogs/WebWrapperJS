@@ -13,6 +13,11 @@ li.mobile-wrapper-info {
 #footer-small-links{
     display: none;
 }
+.idaMobileLoggedOut .legal #in-nav,
+.idaMobileLoggedOut .about #in-nav,
+.idaMobileLoggedOut .product #in-nav,
+.idaMobileLoggedOut .privacy #in-nav,
+.idaMobileLoggedOut .faqs #in-nav,
 .password #in-nav {
     display: none;
 }
