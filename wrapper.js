@@ -47,8 +47,6 @@ function wrapper(strHandoff) {
      * @constructor
      */
     function WebWrapper(opts) {
-        var self = this;
-
         //Launch ajax debugging if requested
         if (opts.debugAjax) {
             setTimeout(debugAjax, 5);
@@ -71,7 +69,7 @@ function wrapper(strHandoff) {
              * @returns {*}
              */
             setToken: function (token) {
-                document.documentElement.classList.remove('idaMobileLoggedOut')
+                document.documentElement.classList.remove('idaMobileLoggedOut');
                 return this.token = token
             },
 
@@ -84,6 +82,11 @@ function wrapper(strHandoff) {
              * Bool test if this is android webwrapper
              */
             isAndroid: opts.isAndroid,
+
+            /**
+             * Contains custom push menu items, re-add if push menu is refreshed
+             */
+            pushMenuItems: {},
 
             /**
              * Method to post string message to native app
@@ -177,13 +180,15 @@ function wrapper(strHandoff) {
              * Adds the wrapper app version and server info to the hamburger menu
              */
             addVersionInfo: function () {
-                if (!self.$versionNode) {
-                    self.$versionNode = $("<p class='mobile-wrapper-info'>" +
-                                          "App v" + opts.version + " Server: " + opts.server +
-                                          "</p>");
+                if(!this.$versionNode) {
+                    this.$versionNode = $(
+                        "<p class='mobile-wrapper-info'>" +
+                        "App v" + opts.version + " Server: " + opts.server +
+                        "</p>"
+                    );
                 }
 
-                $('#mp-footer-end').append(self.$versionNode);
+                $('#mp-footer-end').append(this.$versionNode);
             },
 
             /**
@@ -193,15 +198,19 @@ function wrapper(strHandoff) {
              * @param icon
              */
             appendPushMenuItem: function (name, link, icon) {
-                var linkHtml = '<li class="ml-link-wrapper">' +
-                               '    <a class="ml-link app-nav-link" href="'+link+'" data-href="'+link+'">' +
-                               '        <i class="icon-'+icon+'"></i>' +
-                               '        ' + name +
-                               '    </a>' +
-                               '</li>';
+                if(!this.pushMenuItems[name]) {
+                    this.pushMenuItems[name] = $(
+                        '<li class="ml-link-wrapper">' +
+                        '    <a class="ml-link app-nav-link" href="'+link+'" data-href="'+link+'">' +
+                        '        <i class="icon-'+icon+'"></i>' +
+                        '        ' + name +
+                        '    </a>' +
+                        '</li>'
+                    );
+                }
 
                 $('#mp-menu').find('.mp-scroll > ul > .ml-link-wrapper:last-child').after(
-                    $(linkHtml)
+                    this.pushMenuItems[name]
                 );
             },
 
@@ -215,7 +224,7 @@ function wrapper(strHandoff) {
                     $(document.documentElement).addClass('hide');
                     this.postToNativeApp(
                         "logout",
-                        {tokenRefresh: !!self.token}
+                        {tokenRefresh: !!this.token}
                     );
                 }
             },
@@ -243,8 +252,15 @@ function wrapper(strHandoff) {
 
                     //When navigation menu is refreshed, we need to re-add the version number
                     $.subscribe('ajax/navRefreshed', function(e, opts) {
-                        if (opts.navElement === 'mp-menu' || e.type === 'mlpushmenu/toggle') {
+                        if (opts.navElement === 'mp-menu') {
                             self.addVersionInfo();
+
+                            if (self.pushMenuItems) {
+                                //Re-append push menu items
+                                $.each(self.pushMenuItems, function (name, _) {
+                                    self.appendPushMenuItem(name);
+                                });
+                            }
                         }
                     });
                 }
