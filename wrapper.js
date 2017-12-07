@@ -164,7 +164,7 @@ function wrapper(strHandoff) {
                     if (iDialogs.constructors.Dashboard.dashboardPage()) {
                         $.publish('module/reload');
                     } else if (!window.IdaNetwork.confirmNav.blnConfirm) {
-                        iDialogs.methods.updateThisPage();
+                        iDialogs.methods.updateThisPage('');
                     }
                 }
             },
@@ -373,6 +373,8 @@ function wrapper(strHandoff) {
      * Send console output to native app
      * Most of the time console log is just 1 string
      * but if not, send everything that was logged
+     *
+     * it'd be nice if this weren't so repetitive... oh well
      */
     var _consoleLog = console.log;
     console.log = function () {
@@ -412,5 +414,25 @@ function wrapper(strHandoff) {
         window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
 
         return _consoleWarn.apply(console, arguments);
+    };
+
+    var _consoleErr = console.error;
+    console.error = function () {
+        var args = Array.prototype.slice.call(arguments, 0),
+            message;
+
+        if (args.length === 1 && typeof arguments[0] === "string") {
+            message = "Console error - " + arguments[0];
+        } else {
+            try {
+                message = JSON.stringify(args);
+            } catch (e) {
+                message = "Couldn't parse logged object."
+            }
+        }
+
+        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
+
+        return _consoleErr.apply(console, arguments);
     };
 }
