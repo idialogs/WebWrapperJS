@@ -21,7 +21,7 @@ function wrapper(strHandoff) {
      * Equivalent to documentReady from jQuery
      */
     document.addEventListener("DOMContentLoaded", function (e) {
-        document.documentElement.classList.add('idaMobileLoggedOut')
+        document.documentElement.classList.add('idaMobileLoggedOut');
         window.IdaMobileAppBrowsing.launchApp();
     });
 
@@ -150,7 +150,7 @@ function wrapper(strHandoff) {
              *
              * NOTE this does not reset cached assets, that is handled in IdaNetwork (web JS)
              */
-            updatePage: function() {
+            updatePage: function () {
                 //Refresh sub navigations
                 if (IdaNetwork.getSubNav) {
                     IdaNetwork.getSubNav();
@@ -201,15 +201,17 @@ function wrapper(strHandoff) {
                 if(!this.pushMenuItems[name]) {
                     this.pushMenuItems[name] = $(
                         '<li class="ml-link-wrapper">' +
-                        '    <a class="ml-link app-nav-link" href="'+link+'" data-href="'+link+'">' +
-                        '        <i class="icon-'+icon+'"></i>' +
+                        '    <a class="ml-link app-nav-link" href="' + link + '" data-href="' + link + '">' +
+                        '        <i class="icon-' + icon + '"></i>' +
                         '        ' + name +
                         '    </a>' +
                         '</li>'
                     );
                 }
 
-                $('#mp-menu').find('.mp-scroll > ul > .ml-link-wrapper:last-child').after(
+                $('#mp-menu').find(
+                    '.mp-scroll > ul > .ml-link-wrapper:last-child'
+                ).after(
                     this.pushMenuItems[name]
                 );
             },
@@ -217,7 +219,7 @@ function wrapper(strHandoff) {
             /**
              * If logout screen is visible we hide it and notify the native app
              */
-            avoidLogoutScreen: function() {
+            avoidLogoutScreen: function () {
                 var blnLoginPage = !!document.querySelector('.login-page');
 
                 if (blnLoginPage) {
@@ -251,7 +253,7 @@ function wrapper(strHandoff) {
                     self.addVersionInfo();
 
                     //When navigation menu is refreshed, we need to re-add the version number
-                    $.subscribe('ajax/navRefreshed', function(e, opts) {
+                    $.subscribe('ajax/navRefreshed', function (e, opts) {
                         if (opts.navElement === 'mp-menu') {
                             self.addVersionInfo();
 
@@ -267,7 +269,11 @@ function wrapper(strHandoff) {
 
                 //Append push menu item for app options if specified
                 if (opts.app_options) {
-                    this.appendPushMenuItem(opts.app_options.name, opts.app_options.link, opts.app_options.icon)
+                    this.appendPushMenuItem(
+                        opts.app_options.name,
+                        opts.app_options.link,
+                        opts.app_options.icon
+                    )
                 }
 
                 //If CSS string is provided, put it in the DOM
@@ -362,7 +368,6 @@ function wrapper(strHandoff) {
             return ajax.apply($, arguments);
         }
     }
-
 
     /**
      * Send console output to native app
