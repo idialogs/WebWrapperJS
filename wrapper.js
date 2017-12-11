@@ -175,6 +175,18 @@ function wrapper(strHandoff) {
             },
 
             /**
+             * Update the server/version and trigger refresh of dom element
+             *
+             * @param strServer
+             * @param strVersion
+             */
+            setServerAndVersion: function (strServer, strVersion) {
+                opts.version = strVersion;
+                opts.server = strServer;
+                this.addVersionInfo();
+            },
+
+            /**
              * Opens the push navigation menu (hamburger menu)
              */
             showNavigation: function () {
@@ -185,12 +197,14 @@ function wrapper(strHandoff) {
              * Adds the wrapper app version and server info to the hamburger menu
              */
             addVersionInfo: function () {
+                var str = "App v" + opts.version + " Server: " + opts.server;
+
                 if(!this.$versionNode) {
                     this.$versionNode = $(
-                        "<p class='mobile-wrapper-info'>" +
-                        "App v" + opts.version + " Server: " + opts.server +
-                        "</p>"
+                        "<p class='mobile-wrapper-info'>" + str + "</p>"
                     );
+                } else {
+                    this.$versionNode.text(str);
                 }
 
                 $('#mp-footer-end').append(this.$versionNode);
