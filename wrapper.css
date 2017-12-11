@@ -49,7 +49,7 @@ li.mobile-wrapper-info {
     top: auto;
     left: 20px;
     position: relative;
-    width: calc(100% - 70px);
+    width: calc(100% - 40px);
 }
 
 /*Messages Screen*/

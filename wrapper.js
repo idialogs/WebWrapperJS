@@ -129,18 +129,23 @@ function wrapper(strHandoff) {
             /**
              * Perform native-initiated navigation via ajax call for speed
              */
-            ajaxNavigation: function (url) {
-                var $page = $('.page');
+            ajaxNavigation: function (url, blnHidePage) {
+                var $page, callback;
 
-                $page.hide();
+                if (blnHidePage) {
+                    $page = $('.page');
+                    $page.hide();
+
+                    callback = function () {
+                        $page.show();
+                    };
+                }
 
                 $.publish(
                     'ajax/load',
                     {
                         url: url,
-                        callback: function () {
-                            $page.show();
-                        }
+                        callback: callback
                     }
                 );
             },
