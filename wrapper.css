@@ -1,8 +1,12 @@
 @charset "utf-8";
 
-
-
 /******* General Css ***********/
+
+/*Disables any context menus or other long press actions*/
+* {
+    -webkit-touch-callout: none !important;
+}
+
 li.mobile-wrapper-info {
     margin-left: 10%;
     color: rgba(255,255,255,0.6);

@@ -365,7 +365,7 @@ function wrapper(strHandoff) {
                          * Make contextmenu action (longpress) act like a tap
                          */
                         touchLongPress: {
-                            events: 'contextmenu',
+                            events: 'press',
                             select: '*',
                             method: function (e) {
                                 e.preventDefault();
