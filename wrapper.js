@@ -360,6 +360,18 @@ function wrapper(strHandoff) {
                             method: function () {
                                 self.avoidLogoutScreen();
                             }
+                        },
+                        /**
+                         * Make contextmenu action (longpress) act like a tap
+                         */
+                        touchLongPress: {
+                            events: 'contextmenu',
+                            select: '*',
+                            method: function (e) {
+                                e.preventDefault();
+                                $(this).trigger('click');
+                                return false;
+                            }
                         }
                     }
                 );
