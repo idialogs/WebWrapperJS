@@ -392,11 +392,24 @@ function wrapper(strHandoff) {
         var ajax = $.ajax;
 
         $.ajax = function () {
+            var cb = arguments[0].callback || function () {},
+                time = new Date(),
+                url = arguments[0].url,
+                args = Array.prototype.slice.call(arguments);
+
             IdaMobileAppBrowsing.postToNativeApp(
                 "log",
-                {message: "Ajax url: " + arguments[0].url}
+                {message: "Ajax url: " + url}
             );
-            return ajax.apply($, arguments);
+
+            var a = ajax.apply($, args);
+
+            a.done(function () {
+                console.log("Elapsed " + ((new Date()) - time) + "ms - " + url);
+                cb.apply(this, arguments);
+            });
+
+            return a;
         }
     }
 
