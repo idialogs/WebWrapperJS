@@ -267,6 +267,17 @@ function wrapper(strHandoff) {
                 // Inform native app of document ready and whether we are logged in
                 this.postToNativeApp('docready');
 
+                // Checks if user has location tracking privilege
+                iDialogs.userInfo.checkPrivilege('location_tracking',
+                     function(){
+                         if(self.isIOS){ self.postToNativeApp('location');}
+                         else if (self.isAndroid){ window.callToAndroidFunction.postMessage("location", "");}
+                     },
+                     function(){
+                         console.log('FAIL');
+                     }
+                 );
+
                 //Add version info to page
                 if (opts.server && opts.version) {
                     self.addVersionInfo();
