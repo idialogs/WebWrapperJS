@@ -274,6 +274,8 @@ function wrapper(strHandoff) {
                         }
                     );
                 }
+
+                return value;
             },
 
             /**
