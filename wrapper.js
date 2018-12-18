@@ -250,6 +250,32 @@ function wrapper(strHandoff) {
                 }
             },
 
+            getWebConfigValue: function(strKey, blnPost) {
+                var value = null;
+
+                try {
+                    if (iDialogs && iDialogs.userInfo) {
+                        value = iDialogs.userInfo[strKey] || value;
+                    } else if (IdaGlobals && IdaGlobals.appInfo) {
+                        value = IdaGlobals[strKey];
+                    }
+                } catch(e) {}
+
+                if (blnPost) {
+                    this.postToNativeApp(
+                        "config",
+                        {
+                            payload: [
+                                {
+                                    key: strKey,
+                                    value: value
+                                }
+                            ]
+                        }
+                    );
+                }
+            },
+
             /**
              * On document ready logic
              */
@@ -268,15 +294,21 @@ function wrapper(strHandoff) {
                 this.postToNativeApp('docready');
 
                 // Checks if user has location tracking privilege
-                iDialogs.userInfo.checkPrivilege('location_tracking',
-                     function(){
-                         if(self.isIOS){ self.postToNativeApp('location');}
-                         else if (self.isAndroid){ window.callToAndroidFunction.postMessage("location", "");}
-                     },
-                     function(){
-                         console.log('FAIL');
-                     }
-                 );
+                iDialogs.userInfo.checkPrivilege(
+                    'location_tracking',
+                    function () {
+                        //TODO shouldn't need this dichotomy here...
+                        if (self.isIOS) {
+                            self.postToNativeApp('location');
+
+                        } else if (self.isAndroid) {
+                            window.callToAndroidFunction.postMessage("location", "");
+                        }
+                    },
+                    function () {
+                        console.log('WrapperJS: iDialogs location tracking privilege denied.');
+                    }
+                );
 
                 //Add version info to page
                 if (opts.server && opts.version) {
