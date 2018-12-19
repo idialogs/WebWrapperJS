@@ -299,11 +299,11 @@ function wrapper(strHandoff) {
                 iDialogs.userInfo.checkPrivilege(
                     'location_tracking',
                     function () {
-                        //TODO shouldn't need this dichotomy here...
                         if (self.isIOS) {
-                            self.postToNativeApp('location');
+                            self.postToNativeApp('start_location_tracking');
 
                         } else if (self.isAndroid) {
+                            //TODO catch android app up to new command name
                             window.callToAndroidFunction.postMessage("location", "");
                         }
                     },
