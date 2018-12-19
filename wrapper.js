@@ -220,7 +220,7 @@ function wrapper(strHandoff) {
                 if(!this.pushMenuItems[name]) {
                     this.pushMenuItems[name] = $(
                         '<li class="ml-link-wrapper">' +
-                        '    <a class="ml-link app-nav-link" href="' + link + '" data-href="' + link + '">' +
+                        '    <a class="ml-link app-nav-link" href="javascript:void()" data-href="' + link + '">' +
                         '        <i class="icon-' + icon + '"></i>' +
                         '        ' + name +
                         '    </a>' +
@@ -377,7 +377,7 @@ function wrapper(strHandoff) {
                          * Listener for native logout functionality
                          */
                         logoutNativeApp: {
-                            events: ["click", "touchstart"],
+                            events: ["tap"],
                             select: "[href*='/logout']",
                             method: function (e) {
                                 self.postToNativeApp('logout', '{}');
@@ -387,9 +387,10 @@ function wrapper(strHandoff) {
                          * General native-app links
                          */
                         nativeAppLink: {
-                            events: ["click", "touchstart"],
+                            events: ["tap"],
                             select: ".app-nav-link",
                             method: function (e) {
+                                e.stopImmediatePropagation();
                                 e.preventDefault();
                                 self.postToNativeApp(
                                     "navigate",
