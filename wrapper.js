@@ -295,6 +295,14 @@ function wrapper(strHandoff) {
                 // Inform native app of document ready and whether we are logged in
                 this.postToNativeApp('docready');
 
+                if (iDialogs.userInfo.hasRole) {
+                    if (iDialogs.userInfo.hasRole('traveling')) {
+                        self.postToNativeApp('enable_location_services');
+                    } else {
+                        self.postToNativeApp('disable_location_services');
+                    }
+                }
+
                 // Checks if user has location tracking privilege
                 iDialogs.userInfo.checkPrivilege(
                     'location_tracking',
