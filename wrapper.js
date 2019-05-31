@@ -47,6 +47,8 @@ function wrapper(strHandoff) {
      * @constructor
      */
     function WebWrapper(opts) {
+        opts = opts || {};
+
         //Launch ajax debugging if requested
         if (opts.debugAjax) {
             setTimeout(debugAjax, 5);
@@ -62,6 +64,11 @@ function wrapper(strHandoff) {
              * Communicate oauth token to web JS
              */
             token: opts.oauthToken,
+
+            /**
+             * Whether the wrapper app will support deep linking into external apps
+             */
+            deepLinking: !!opts.deepLinking,
 
             /**
              * Set/update oauth token
