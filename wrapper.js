@@ -199,6 +199,23 @@ function wrapper(strHandoff) {
             showNavigation: function () {
                 $.publish('mlpushmenu/toggle');
             },
+            
+            /**
+             * Spin the refresh icon (indicator of updating)
+             */
+            setRefreshing: function (blnOn) {
+                var $refresh = $('[data-btn-action="location"] .fn-location-services-refresh');
+                
+                //Small delay because it is kind of weird when the spin stops too fast. would be nice to make it full rotations...
+                
+                if (blnOn) {
+                    $refresh.addClass('icon-spin');
+                } else {
+                    setTimeout(function(){
+                        $refresh.removeClass('icon-spin');
+                    }, 500)
+                }
+            },
 
             /**
              * Adds the wrapper app version and server info to the hamburger menu

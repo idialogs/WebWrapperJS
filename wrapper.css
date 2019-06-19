@@ -66,3 +66,7 @@ li.mobile-wrapper-info {
     height: 76% !important;
     max-height: none !important;
 }
+
+.idaWebviewIOS [data-btn-action="location"] {
+    visibility: visible;
+}
