@@ -216,6 +216,12 @@ function wrapper(strHandoff) {
                     }, 500)
                 }
             },
+            
+            locationUpdate: function (strJson) {
+                var locationData = JSON.parse(strJson);
+                
+                $.publish('user/locationChange', locationData);
+            },
 
             /**
              * Adds the wrapper app version and server info to the hamburger menu
