@@ -163,20 +163,22 @@ function wrapper(strHandoff) {
              * NOTE this does not reset cached assets, that is handled in IdaNetwork (web JS)
              */
             updatePage: function () {
+                if (!window.iDialogs || !window.IdaNetwork) { return; }
+
                 //Refresh sub navigations
-                if (IdaNetwork.getSubNav) {
-                    IdaNetwork.getSubNav();
+                if (window.IdaNetwork.getSubNav) {
+                    window.IdaNetwork.getSubNav();
                 }
 
                 //Refresh content on the page via ajax
-                if (IdaNetwork.updatePageContent) {
-                    IdaNetwork.updatePageContent();
+                if (window.IdaNetwork.updatePageContent) {
+                    window.IdaNetwork.updatePageContent();
                 } else {
                     //Fallback, can be deleted later...
-                    if (iDialogs.constructors.Dashboard.dashboardPage()) {
+                    if (window.iDialogs.constructors.Dashboard.dashboardPage()) {
                         $.publish('module/reload');
                     } else if (!window.IdaNetwork.confirmNav.blnConfirm) {
-                        iDialogs.methods.updateThisPage('');
+                        window.iDialogs.methods.updateThisPage('');
                     }
                 }
             },
@@ -284,10 +286,10 @@ function wrapper(strHandoff) {
                 var value = null;
 
                 try {
-                    if (iDialogs && iDialogs.userInfo) {
-                        value = iDialogs.userInfo[strKey] || value;
-                    } else if (IdaGlobals && IdaGlobals.appInfo) {
-                        value = IdaGlobals[strKey];
+                    if (window.iDialogs && window.iDialogs.userInfo) {
+                        value = window.iDialogs.userInfo[strKey] || value;
+                    } else if (window.IdaGlobals && window.IdaGlobals.appInfo) {
+                        value = window.IdaGlobals[strKey];
                     }
                 } catch(e) {}
 
@@ -325,30 +327,31 @@ function wrapper(strHandoff) {
                 // Inform native app of document ready and whether we are logged in
                 this.postToNativeApp('docready');
 
-                if (iDialogs.userInfo.hasRole) {
-                    if (iDialogs.userInfo.hasRole('traveling')) {
-                        self.postToNativeApp('enable_location_services');
-                    } else {
-                        self.postToNativeApp('disable_location_services');
-                    }
-                }
-
-                // Checks if user has location tracking privilege
-                iDialogs.userInfo.checkPrivilege(
-                    'location_tracking',
-                    function () {
-                        if (self.isIOS) {
-                            self.postToNativeApp('start_location_tracking');
-
-                        } else if (self.isAndroid) {
-                            //TODO catch android app up to new command name
-                            window.callToAndroidFunction.postMessage("location", "");
+                if (!!window.iDialogs) {
+                    if (window.iDialogs.userInfo.hasRole) {
+                        if (window.iDialogs.userInfo.hasRole('traveling')) {
+                            self.postToNativeApp('enable_location_services');
+                        } else {
+                            self.postToNativeApp('disable_location_services');
                         }
-                    },
-                    function () {
-                        console.log('WrapperJS: iDialogs location tracking privilege denied.');
                     }
-                );
+
+                    // Checks if user has location tracking privilege
+                    window.iDialogs.userInfo.checkPrivilege(
+                        'location_tracking',
+                        function () {
+                            if (self.isIOS) {
+                                self.postToNativeApp('start_location_tracking');
+
+                            } else if (self.isAndroid) {
+                                window.callToAndroidFunction.postMessage("location", "");
+                            }
+                        },
+                        function () {
+                            console.log('WrapperJS: iDialogs location tracking privilege denied.');
+                        }
+                    );
+                }
 
                 //Add version info to page
                 if (opts.server && opts.version) {
@@ -481,7 +484,7 @@ function wrapper(strHandoff) {
                 url = arguments[0].url,
                 args = Array.prototype.slice.call(arguments);
 
-            IdaMobileAppBrowsing.postToNativeApp(
+            window.IdaMobileAppBrowsing.postToNativeApp(
                 "log",
                 {message: "Ajax url: " + url}
             );
