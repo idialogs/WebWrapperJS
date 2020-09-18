@@ -286,10 +286,20 @@ function wrapper(strHandoff) {
                 var value = null;
 
                 try {
+                    if (window.IdaGlobals) {
+                        value = window.IdaGlobals[strKey] || value;
+
+                        if (window.IdaGlobals.config) {
+                            value = window.IdaGlobals.config[strKey] || value;
+                        }
+
+                        if (window.IdaGlobals.appInfo) {
+                            value = window.IdaGlobals.appInfo[strKey] || value;
+                        }
+                    }
+
                     if (window.iDialogs && window.iDialogs.userInfo) {
                         value = window.iDialogs.userInfo[strKey] || value;
-                    } else if (window.IdaGlobals && window.IdaGlobals.appInfo) {
-                        value = window.IdaGlobals[strKey];
                     }
                 } catch(e) {}
 
