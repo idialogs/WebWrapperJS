@@ -1,8 +1,4 @@
-@charset "utf-8";
 
-/******* General Css ***********/
-
-/*Disables any context menus or other long press actions*/
 * {
     -webkit-touch-callout: none !important;
 }
@@ -67,6 +63,6 @@ li.mobile-wrapper-info {
     max-height: none !important;
 }
 
-.idaWebviewIOS [data-btn-action="location"] {
+.idaWebviewIOS [data-btn-action=location] {
     visibility: visible;
 }

@@ -16,33 +16,23 @@ function wrapper(strHandoff) {
     //Initialize web wrapper object, communicates to web JS that we are in mobile browsing mode
     window.IdaMobileAppBrowsing = new WebWrapper(JSON.parse(strHandoff));
 
-    /**
-     * Delayed initialization for after DOM ready
-     * Equivalent to documentReady from jQuery
-     */
-    document.addEventListener("DOMContentLoaded", function (e) {
+    var fnStart = function (e) {
         document.documentElement.classList.add('idaMobileLoggedOut');
         window.IdaMobileAppBrowsing.launchApp();
-    });
-
+    };
+    
+    if (/complete|interactive|loaded/.test(document.readyState)) {
+        // In case the document has finished parsing, document's readyState will
+        // be one of "complete", "interactive" or (non-standard) "loaded".
+        fnStart();
+    } else {
+        // The document is not ready yet, so wait for the DOMContentLoaded event
+        document.addEventListener('DOMContentLoaded', fnStart, false);
+    }
+    
     /**
      * WebWrapper module contains all webview wrapper functionality
      *
-     * @param opts {{
-        appName: string
-        css_class: string
-        oauthToken: string
-        debugAjax: bool
-        isWrapperApp: bool
-        version: string
-        server: string
-        style: string
-        app_options: {
-            name: string
-            link: string
-            icon: string
-          }
-       }}
      * @returns WebWrapper
      * @constructor
      */
@@ -53,7 +43,7 @@ function wrapper(strHandoff) {
         if (opts.debugAjax) {
             setTimeout(debugAjax, 5);
         }
-
+        
         return {
             /**
              * For debugging, make opts from launch public
@@ -76,19 +66,31 @@ function wrapper(strHandoff) {
              * @returns {*}
              */
             setToken: function (token) {
-                document.documentElement.classList.remove('idaMobileLoggedOut');
+                if (token) {
+                    document.documentElement.classList.remove('idaMobileLoggedOut');
+                } else {
+                    document.documentElement.classList.add('idaMobileLoggedOut');
+                }
+                
                 return this.token = token
             },
+
+            defaultAction: opts.defaultAction || "idaMessage",
+
+            /**
+             * Bool test if this is xamarin webwrapper
+             */
+            isXamarin: function () { return !!window.csharp },
 
             /**
              * Bool test if this is the iOS webwrapper
              */
-            isIOS: !!window.webkit && !!window.webkit.messageHandlers[opts.appName],
+            isIOs: function () { return !!window.webkit && !!window.webkit.messageHandlers[opts.appName] },
 
             /**
              * Bool test if this is android webwrapper
              */
-            isAndroid: opts.isAndroid,
+            isAndroid: function () { return !!opts.isAndroid },
 
             /**
              * Contains custom push menu items, re-add if push menu is refreshed
@@ -108,29 +110,34 @@ function wrapper(strHandoff) {
              *  docready - notifies app when "documentReady" JS event has fired
              *  log - output message to native console, message could be any type of object
              *
-             * @param message {String}
-             * @param payload {{}}
+             * @param type {String}
+             * @param data
              */
             postToNativeApp: function (type, data) {
                 var payload = {
-                    type: type,
-                    data: data
+                    type: type || this.defaultAction,
+                    data: data || {}
                 };
-
-                if (this.isIOS) {
-                    try {
+                
+                try {
+                    if (this.isXamarin()) {
+                        var strPayload = JSON.stringify(payload);
+                        
+                        if (window[type]) {
+                            //Explicitly registered functions
+                            window[type](strPayload);
+                        } else {
+                            //Else post back to default handler
+                            window.csharp("{'action':'" + this.defaultAction + "','data':'"+window.btoa(strPayload)+"'}");
+                        }
+                        
+                    } else if (this.isIOs()) {
                         window.webkit.messageHandlers[opts.appName].postMessage(payload);
-                    } catch (e) {
-                        window.webkit.messageHandlers[opts.appName].postMessage(
-                            {
-                                type: "error",
-                                data: "Failed to post message."
-                            }
-                        );
+                       
+                    } else if (this.isAndroid()) {
+                        window.callToAndroidFunction.postMessage(type, data);
                     }
-                } else if (this.isAndroid) {
-                    window.callToAndroidFunction.postMessage(type, data);
-                }
+                } catch (e) {}
             },
 
             /**
@@ -350,12 +357,7 @@ function wrapper(strHandoff) {
                     window.iDialogs.userInfo.checkPrivilege(
                         'location_tracking',
                         function () {
-                            if (self.isIOS) {
-                                self.postToNativeApp('start_location_tracking');
-
-                            } else if (self.isAndroid) {
-                                window.callToAndroidFunction.postMessage("location", "");
-                            }
+                            self.postToNativeApp('start_location_tracking');
                         },
                         function () {
                             console.log('WrapperJS: iDialogs location tracking privilege denied.');
@@ -432,6 +434,7 @@ function wrapper(strHandoff) {
                             select: "[href*='/logout']",
                             method: function (e) {
                                 self.postToNativeApp('logout', '{}');
+                                self.postToNativeApp('logout');
                             }
                         },
                         /**
