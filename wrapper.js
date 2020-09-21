@@ -433,7 +433,6 @@ function wrapper(strHandoff) {
                             events: ["tap"],
                             select: "[href*='/logout']",
                             method: function (e) {
-                                self.postToNativeApp('logout', '{}');
                                 self.postToNativeApp('logout');
                             }
                         },
