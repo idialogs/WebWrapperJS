@@ -402,6 +402,11 @@ function wrapper(strHandoff) {
 
                 //Now that publish is available, notify web JS that app browsing is active
                 $.publish('idaMobileApp/load', opts.appName);
+                
+                setTimeout(function () {
+                    self.postToNativeApp("loaded");
+                }, 1);
+                
 
                 $.attachHandlers(
                     {
