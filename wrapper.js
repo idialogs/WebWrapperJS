@@ -385,7 +385,15 @@ function wrapper(strHandoff) {
                 }
 
                 //Append push menu item for app options if specified
-                if (opts.app_options) {
+                if (opts.app_options instanceof Array) {
+                    opts.app_options.map(function (item) {
+                        self.appendPushMenuItem(
+                            item.name,
+                            item.link,
+                            item.icon
+                        )  
+                    });
+                } else if (opts.app_options) {
                     this.appendPushMenuItem(
                         opts.app_options.name,
                         opts.app_options.link,
