@@ -14,12 +14,14 @@
 function wrapper(strHandoff) {
 
     //Initialize web wrapper object, communicates to web JS that we are in mobile browsing mode
-    window.IdaMobileAppBrowsing = new WebWrapper(JSON.parse(strHandoff));
-
+    window.IdaMobileAppBrowsing = window.IdaMobileAppBrowsing || new WebWrapper(JSON.parse(strHandoff));
+    
     var fnStart = function (e) {
-        document.documentElement.classList.add('idaMobileLoggedOut');
-        window.IdaMobileAppBrowsing.launchApp();
-    };
+            if (window.IdaMobileAppBrowsing.started === true) return;
+            window.IdaMobileAppBrowsing.started = true;
+            document.documentElement.classList.add('idaMobileLoggedOut');
+            window.IdaMobileAppBrowsing.launchApp();
+        };
     
     if (/complete|interactive|loaded/.test(document.readyState)) {
         // In case the document has finished parsing, document's readyState will
@@ -237,11 +239,10 @@ function wrapper(strHandoff) {
              */
             addVersionInfo: function () {
                 var str = "App v" + opts.version + " Server: " + opts.server;
+                this.$versionNode = this.$versionNode || $('.mobile-wrapper-info');
 
-                if(!this.$versionNode) {
-                    this.$versionNode = $(
-                        "<p class='mobile-wrapper-info'>" + str + "</p>"
-                    );
+                if(!this.$versionNode.length > 0) {
+                    this.$versionNode = $("<p class='mobile-wrapper-info'>" + str + "</p>");
                 } else {
                     this.$versionNode.text(str);
                 }
@@ -256,9 +257,11 @@ function wrapper(strHandoff) {
              * @param icon
              */
             appendPushMenuItem: function (name, link, icon) {
-                if(!this.pushMenuItems[name]) {
+                this.pushMenuItems[name] = this.pushMenuItems[name] || $(".ml-link-wrapper[data-app-item='"+name+"']");
+                
+                if(this.pushMenuItems[name].length === 0) {
                     this.pushMenuItems[name] = $(
-                        '<li class="ml-link-wrapper">' +
+                        '<li class="ml-link-wrapper" data-app-item="+name+">' +
                         '    <a class="ml-link app-nav-link" href="javascript:void()" data-href="' + link + '">' +
                         '        <i class="icon-' + icon + '"></i>' +
                         '        ' + name +
