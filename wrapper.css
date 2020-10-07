@@ -27,6 +27,9 @@ li.mobile-wrapper-info {
     display: none !important;
 }
 
+.fn-location-services-refresh {
+    text-decoration: none !important;
+}
 
 /*************** Android Specific Css ********************/
 .idaMobileAndroid .keypadInputContainer .modal-body {
