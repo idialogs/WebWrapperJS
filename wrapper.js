@@ -17,11 +17,9 @@ function wrapper(strHandoff) {
     window.IdaMobileAppBrowsing = window.IdaMobileAppBrowsing || new WebWrapper(JSON.parse(strHandoff));
     
     var fnStart = function (e) {
-            if (window.IdaMobileAppBrowsing.started === true) return;
-            window.IdaMobileAppBrowsing.started = true;
-            document.documentElement.classList.add('idaMobileLoggedOut');
-            window.IdaMobileAppBrowsing.launchApp();
-        };
+        document.documentElement.classList.add('idaMobileLoggedOut');
+        window.IdaMobileAppBrowsing.launchApp();
+    };
     
     if (/complete|interactive|loaded/.test(document.readyState)) {
         // In case the document has finished parsing, document's readyState will
