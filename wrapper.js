@@ -177,6 +177,13 @@ function wrapper(strHandoff) {
                     window.IdaNetwork.getSubNav();
                 }
 
+                var self = this;
+                this.setRefreshing(true);
+                
+                setTimeout(function(){
+                    self.setRefreshing(false);
+                }, 1500)
+                
                 //Refresh content on the page via ajax
                 if (window.IdaNetwork.updatePageContent) {
                     window.IdaNetwork.updatePageContent();
