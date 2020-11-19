@@ -19,7 +19,13 @@ function wrapper(strHandoff) {
     var fnStart = function (e) {
         document.documentElement.classList.add('idaMobileLoggedOut');
         window.IdaMobileAppBrowsing.launchApp();
+        document.IdaState = "launched";
     };
+    
+    if (document.IdaState) {
+        console.log("Ida is already " + document.IdaState)
+        return;
+    } 
     
     if (/complete|interactive|loaded/.test(document.readyState)) {
         // In case the document has finished parsing, document's readyState will
@@ -27,6 +33,7 @@ function wrapper(strHandoff) {
         fnStart();
     } else {
         // The document is not ready yet, so wait for the DOMContentLoaded event
+        document.IdaState = "listening";
         document.addEventListener('DOMContentLoaded', fnStart, false);
     }
     
@@ -43,7 +50,11 @@ function wrapper(strHandoff) {
         if (opts.debugAjax) {
             setTimeout(debugAjax, 5);
         }
-        
+
+        var _consoleLog = console.log;
+        var _consoleWarn = console.warn;
+        var _consoleErr = console.error;
+
         return {
             /**
              * For debugging, make opts from launch public
@@ -78,19 +89,21 @@ function wrapper(strHandoff) {
             defaultAction: opts.defaultAction || "idaMessage",
 
             /**
-             * Bool test if this is xamarin webwrapper
+             * Bool test if this is xamarin
              */
             isXamarin: function () { return !!window.csharp },
 
             /**
-             * Bool test if this is the iOS webwrapper
+             * Bool test if this is the iOS
              */
             isIOs: function () { return !!window.webkit && !!window.webkit.messageHandlers[opts.appName] },
 
             /**
-             * Bool test if this is android webwrapper
+             * Bool test if this is android
              */
             isAndroid: function () { return !!opts.isAndroid },
+            
+            isLaunched: false,
 
             /**
              * Contains custom push menu items, re-add if push menu is refreshed
@@ -113,7 +126,9 @@ function wrapper(strHandoff) {
              * @param type {String}
              * @param data
              */
-            postToNativeApp: function (type, data) {
+            postToNativeApp: function (type, data, retry) {
+                retry = retry || 0;
+                
                 var payload = {
                     type: type || this.defaultAction,
                     data: data || {}
@@ -125,9 +140,11 @@ function wrapper(strHandoff) {
                         
                         if (window[type]) {
                             //Explicitly registered functions
+                            _consoleLog('explicit function', window[type]);
                             window[type](strPayload);
                         } else {
                             //Else post back to default handler
+                            _consoleLog("default action", this.defaultAction);
                             window.csharp("{'action':'" + this.defaultAction + "','data':'"+window.btoa(strPayload)+"'}");
                         }
                         
@@ -136,8 +153,15 @@ function wrapper(strHandoff) {
                        
                     } else if (this.isAndroid()) {
                         window.callToAndroidFunction.postMessage(type, data);
+                    } else {
+                        _consoleWarn('Native method not found, reposting...');
+                        if (retry < 50) {
+                            setTimeout(this.postToNativeApp.bind(this, type, data, retry+1), 5)
+                        }
                     }
-                } catch (e) {}
+                } catch (e) {
+                    _consoleWarn(e);
+                }
             },
 
             /**
@@ -419,11 +443,6 @@ function wrapper(strHandoff) {
                 //Now that publish is available, notify web JS that app browsing is active
                 $.publish('idaMobileApp/load', opts.appName);
                 
-                setTimeout(function () {
-                    self.postToNativeApp("loaded");
-                }, 1);
-                
-
                 $.attachHandlers(
                     {
                         /**
@@ -495,108 +514,112 @@ function wrapper(strHandoff) {
                         }
                     }
                 );
+                
+                setTimeout(function () {
+                    self.isLaunched = true;
+                    self.postToNativeApp("loaded");
+                }, 1);
+                
+                if (opts.debugConsole !== false) {
+                    /**
+                     * Send console output to native app
+                     * Most of the time console log is just 1 string
+                     * but if not, send everything that was logged
+                     *
+                     * it'd be nice if this weren't so repetitive... oh well
+                     */
+                    console.log = function () {
+                        var args = Array.prototype.slice.call(arguments, 0),
+                            message;
+
+                        if (args.length === 1 && typeof arguments[0] === "string") {
+                            message = "Console log - " + arguments[0];
+                        } else {
+                            try {
+                                message = JSON.stringify(args);
+                            } catch (e) {
+                                message = "Couldn't parse logged object."
+                            }
+                        }
+
+                        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
+
+                        return _consoleLog.apply(console, arguments);
+                    };
+
+                    console.warn = function () {
+                        var args = Array.prototype.slice.call(arguments, 0),
+                            message;
+
+                        if (args.length === 1 && typeof arguments[0] === "string") {
+                            message = "Console warn - " + arguments[0];
+                        } else {
+                            try {
+                                message = JSON.stringify(args);
+                            } catch (e) {
+                                message = "Couldn't parse logged object."
+                            }
+                        }
+
+                        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
+
+                        return _consoleWarn.apply(console, arguments);
+                    };
+
+                    console.error = function () {
+                        var args = Array.prototype.slice.call(arguments, 0),
+                            message;
+
+                        if (args.length === 1 && typeof arguments[0] === "string") {
+                            message = "Console error - " + arguments[0];
+                        } else {
+                            try {
+                                message = JSON.stringify(args);
+                            } catch (e) {
+                                message = "Couldn't parse logged object."
+                            }
+                        }
+
+                        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
+
+                        return _consoleErr.apply(console, arguments);
+                    }
+                }
+            }
+        }
+        
+        /**
+         * Utility to communicate the URL of all jQuery ajax calls back to native app
+         * Toggle on with "debugAjax" option
+         */
+        function debugAjax() {
+            if (!window.$) {
+                setTimeout(debugAjax, 5);
+                return;
+            }
+
+            var ajax = $.ajax;
+
+            $.ajax = function () {
+                var cb = arguments[0].callback || function () {},
+                    time = new Date(),
+                    url = arguments[0].url,
+                    args = Array.prototype.slice.call(arguments);
+
+                window.IdaMobileAppBrowsing.postToNativeApp(
+                    "log",
+                    {message: "Ajax url: " + url}
+                );
+
+                var a = ajax.apply($, args);
+
+                a.done(function () {
+                    console.log("Elapsed " + ((new Date()) - time) + "ms - " + url);
+                    cb.apply(this, arguments);
+                });
+
+                return a;
             }
         }
     }
-
-    /**
-     * Utility to communicate the URL of all jQuery ajax calls back to native app
-     * Toggle on with "debugAjax" option
-     */
-    function debugAjax() {
-        if (!window.$) {
-            setTimeout(debugAjax, 5);
-            return;
-        }
-
-        var ajax = $.ajax;
-
-        $.ajax = function () {
-            var cb = arguments[0].callback || function () {},
-                time = new Date(),
-                url = arguments[0].url,
-                args = Array.prototype.slice.call(arguments);
-
-            window.IdaMobileAppBrowsing.postToNativeApp(
-                "log",
-                {message: "Ajax url: " + url}
-            );
-
-            var a = ajax.apply($, args);
-
-            a.done(function () {
-                console.log("Elapsed " + ((new Date()) - time) + "ms - " + url);
-                cb.apply(this, arguments);
-            });
-
-            return a;
-        }
-    }
-
-    /**
-     * Send console output to native app
-     * Most of the time console log is just 1 string
-     * but if not, send everything that was logged
-     *
-     * it'd be nice if this weren't so repetitive... oh well
-     */
-    var _consoleLog = console.log;
-    console.log = function () {
-        var args = Array.prototype.slice.call(arguments, 0),
-            message;
-
-        if (args.length === 1 && typeof arguments[0] === "string") {
-            message = "Console log - " + arguments[0];
-        } else {
-            try {
-                message = JSON.stringify(args);
-            } catch (e) {
-                message = "Couldn't parse logged object."
-            }
-        }
-
-        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
-
-        return _consoleLog.apply(console, arguments);
-    };
-
-    var _consoleWarn = console.warn;
-    console.warn = function () {
-        var args = Array.prototype.slice.call(arguments, 0),
-            message;
-
-        if (args.length === 1 && typeof arguments[0] === "string") {
-            message = "Console warn - " + arguments[0];
-        } else {
-            try {
-                message = JSON.stringify(args);
-            } catch (e) {
-                message = "Couldn't parse logged object."
-            }
-        }
-
-        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
-
-        return _consoleWarn.apply(console, arguments);
-    };
-
-    var _consoleErr = console.error;
-    console.error = function () {
-        var args = Array.prototype.slice.call(arguments, 0),
-            message;
-
-        if (args.length === 1 && typeof arguments[0] === "string") {
-            message = "Console error - " + arguments[0];
-        } else {
-            try {
-                message = JSON.stringify(args);
-            } catch (e) {
-                message = "Couldn't parse logged object."
-            }
-        }
-
-        window.IdaMobileAppBrowsing.postToNativeApp("log", {message: message});
-
-        return _consoleErr.apply(console, arguments);
-    };
 }
